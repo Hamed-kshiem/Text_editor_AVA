@@ -123,8 +123,7 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener {
                     currentFilePath = file.getAbsolutePath();
                     setTitle("Java Text Editor - " + currentFilePath);
                 } catch (IOException ex) {
-                    JOptionPane.showMessageDialog(this, "Error reading file: " + ex.getMessage(),
-                            "File Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Error reading file: " + ex.getMessage(), "File Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         } else if (source == saveMenuItem) {
@@ -153,13 +152,11 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener {
                 System.out.println("Searching for: " + searchText);
                 int index = viewer.search(searchText);
                 if (index >= 0) {
-                    JOptionPane.showMessageDialog(this, "Text found at index: " + index,
-                            "Search", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Text found at index: " + index, "Search", JOptionPane.INFORMATION_MESSAGE);
                     viewer.select(index, index + searchText.length());
                     viewer.caretColumn = index + searchText.length();
                 } else {
-                    JOptionPane.showMessageDialog(this, "Text not found: " + searchText,
-                            "Search", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Text not found: " + searchText, "Search", JOptionPane.INFORMATION_MESSAGE);
                 }
             }
         } else if (source == fontComboBox) {
@@ -193,8 +190,7 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener {
             currentFilePath = file.getAbsolutePath();
             setTitle("Java Text Editor - " + currentFilePath);
         } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, "Error writing file: " + ex.getMessage(),
-                    "File Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Error writing file: " + ex.getMessage(), "File Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -205,7 +201,7 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener {
 
     @Override
     public void keyTyped(KeyEvent e) {
-      // add
+        // add
     }
 
     @Override
@@ -239,7 +235,7 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener {
             text.insert("\n", text.getCaretPosition());
         } else if (keyCode == KeyEvent.VK_TAB) {
             text.insert("\t", text.getCaretPosition());
-        }  else if (keyCode == KeyEvent.VK_A && modifiers == KeyEvent.CTRL_MASK) {
+        } else if (keyCode == KeyEvent.VK_A && modifiers == KeyEvent.CTRL_MASK) {
             text.selectAll();
         } else if (keyCode == KeyEvent.VK_X && modifiers == KeyEvent.CTRL_MASK) {
             text.cut();
@@ -445,6 +441,7 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener {
         public void update(Graphics g) {
             paint(g);
         }
+
         public void setFontColor(Color color) {
             this.fontColor = color;
             repaint();
@@ -555,8 +552,7 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener {
 
         public void paste() {
             try {
-                String selection = (String) Toolkit.getDefaultToolkit().
-                        getSystemClipboard().getData(DataFlavor.stringFlavor);
+                String selection = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
                 if (viewer.selectionStart >= 0 && viewer.selectionEnd >= 0) {
                     sb.delete(viewer.selectionStart, viewer.selectionEnd);
                 }
@@ -627,7 +623,7 @@ public class TextEditor extends JFrame implements ActionListener, KeyListener {
                 viewer.repaint();
             }
 
-            
+
         }
 
         public void moveCaretBackward() {
