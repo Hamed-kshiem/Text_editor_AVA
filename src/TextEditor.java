@@ -91,6 +91,7 @@ public class TextEditor extends JFrame implements ActionListener {
 
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
+                    System.out.println("Double clicked");
                     viewer.selectWord(e.getX(), e.getY());
                 }
             }
@@ -149,6 +150,7 @@ public class TextEditor extends JFrame implements ActionListener {
         } else if (source == searchMenuItem) {
             String searchText = JOptionPane.showInputDialog(this, "Search Text:");
             if (searchText != null && searchText.length() > 0) {
+                System.out.println("Searching for: " + searchText);
                 int index = viewer.search(searchText);
                 if (index >= 0) {
                     viewer.select(index, index + searchText.length());
@@ -170,16 +172,12 @@ public class TextEditor extends JFrame implements ActionListener {
             viewer.setFont(font);
             text.setFont(font);
         } else if (source == fontColorComboBox) {
-            //TODO not working
-         // Color color = (Color) fontColorComboBox.getSelectedItem();
-            Color newColor = JColorChooser.showDialog(this, "Choose Color", viewer.getForeground());
-
+            Color newColor = (Color) fontColorComboBox.getSelectedItem();
             Font font = viewer.getFont().deriveFont(Font.PLAIN);
             font = new Font(font.getFontName(), font.getStyle(), font.getSize());
             viewer.setFont(font);
             text.setFont(font);
-            viewer.setForeground(newColor);
-            text.setForeground(newColor);
+            viewer.setFontColor(newColor);
 
         }
     }
@@ -210,6 +208,7 @@ public class TextEditor extends JFrame implements ActionListener {
         private int selectionStart = -1;
         private int selectionEnd = -1;
         private boolean mousePressed = false;
+        private Color fontColor = Color.BLACK;
 
         public Viewer() {
             setBackground(Color.WHITE);
@@ -220,9 +219,9 @@ public class TextEditor extends JFrame implements ActionListener {
 
         public void paint(Graphics g) {
             g.setColor(getBackground());
-            g.fillRect(0, 0, getWidth(), getHeight());
+            g.fillRect(5, 0, getWidth(), getHeight());
 
-            g.setColor(Color.BLACK);
+            g.setColor(fontColor);// cha
             FontMetrics fm = getFontMetrics(getFont());
             int y = fm.getAscent();
             int x = 0;
@@ -285,8 +284,12 @@ public class TextEditor extends JFrame implements ActionListener {
         }
 
         public int search(String searchText) {
-            String text = "getText()";
+            String text = getText();
             return text.indexOf(searchText);
+        }
+
+        private String getText() {
+            return text.getText();
         }
 
         private int getLineCount() {
@@ -346,6 +349,10 @@ public class TextEditor extends JFrame implements ActionListener {
 
         public void update(Graphics g) {
             paint(g);
+        }
+        public void setFontColor(Color color) {
+            this.fontColor = color;
+            repaint();
         }
     }
 
