@@ -243,24 +243,56 @@ public class TextEditor extends JFrame implements ActionListener {
             g.setColor(Color.BLACK);
             g.drawLine(caretX, caretY, caretX, caretY + lineHeight);
 
-            // draw selection
+            // draw selection behind text
             if (selectionStart >= 0 && selectionEnd >= 0) {
-                int selectionStartX = getLineOffset(selectionStart) + fm.stringWidth(getLineText(selectionStart).substring(0, selectionStart - getLineStart(selectionStart)));
-                int selectionEndX = getLineOffset(selectionEnd) + fm.stringWidth(getLineText(selectionEnd).substring(0, selectionEnd - getLineStart(selectionEnd)));
-                int selectionY = (getLineY(selectionStart) - firstLine * lineHeight);
-                int selectionHeight = (getLineY(selectionEnd) - getLineY(selectionStart) + lineHeight);
-                g.setColor(new Color(51, 153, 255, 128));
-                g.fillRect(selectionStartX, selectionY, selectionEndX - selectionStartX, selectionHeight);
+                int startLine = getLineOfOffset(selectionStart);
+                int startColumn = selectionStart - getLineStart(startLine);
+                int startX = getColumnX(startLine, startColumn);
+                int startY = (startLine - firstLine) * lineHeight;
+
+                int endLine = getLineOfOffset(selectionEnd);
+                int endColumn = selectionEnd - getLineStart(endLine);
+                int endX = getColumnX(endLine, endColumn);
+                int endY = (endLine - firstLine) * lineHeight;
+
+                g.setColor(Color.LIGHT_GRAY);
+                if (startLine == endLine) {
+                    g.fillRect(startX, startY, endX - startX, lineHeight);
+                } else {
+                    for (int i = startLine + 1; i < endLine; i++) {
+                        g.fillRect(0, (i - firstLine) * lineHeight, getWidth(), lineHeight);
+                    }
+                    g.fillRect(0, endY, endX, lineHeight);
+
+                }
+
             }
         }
 
+        private int getColumnX(int startLine, int startColumn) {
+            String line = getLine(startLine);
+            int x = 0;
+            for (int i = 0; i < startColumn; i++) {
+                x += getFontMetrics(getFont()).charWidth(line.charAt(i));
+            }
+            return x;
+        }
+
+        private int getLineOfOffset(int selectionStart) {
+            int lineCount = getLineCount();
+            for (int i = 0; i < lineCount; i++) {
+                int start = getLineStart(i);
+                int end = start + getLine(i).length();
+                if (selectionStart >= start && selectionStart <= end) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
         public void select(int x, int y) {
-            int line = firstLine + y / lineHeight;
-            int column = getColumn(line, x);
-            setCaretPosition(line, column);
-            selectionStart = -1;
-            selectionEnd = -1;
-            mousePressed = true;
+            selectionStart = x;
+            selectionEnd = y;
             repaint();
         }
 
