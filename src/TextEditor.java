@@ -6,7 +6,7 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.*;
 import java.io.*;
 
-public class TextEditor extends JFrame implements ActionListener {
+public class TextEditor extends JFrame implements ActionListener, KeyListener {
     private Viewer viewer;
     private Text text;
     private JScrollPane scrollPane;
@@ -96,7 +96,7 @@ public class TextEditor extends JFrame implements ActionListener {
                 }
             }
         });
-
+        viewer.addKeyListener(this);
         // set default font and size
         text.setFont(new Font("Arial", Font.PLAIN, 12));
         viewer.setFont(new Font("Arial", Font.PLAIN, 12));
@@ -153,7 +153,10 @@ public class TextEditor extends JFrame implements ActionListener {
                 System.out.println("Searching for: " + searchText);
                 int index = viewer.search(searchText);
                 if (index >= 0) {
+                    JOptionPane.showMessageDialog(this, "Text found at index: " + index,
+                            "Search", JOptionPane.INFORMATION_MESSAGE);
                     viewer.select(index, index + searchText.length());
+                    viewer.caretColumn = index + searchText.length();
                 } else {
                     JOptionPane.showMessageDialog(this, "Text not found: " + searchText,
                             "Search", JOptionPane.INFORMATION_MESSAGE);
@@ -198,6 +201,66 @@ public class TextEditor extends JFrame implements ActionListener {
     public static void main(String[] args) {
         TextEditor editor = new TextEditor();
         editor.setVisible(true);
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+      // add
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        int keyCode = e.getKeyCode();
+        int modifiers = e.getModifiers();
+
+        // handle arrow keys
+        if (keyCode == KeyEvent.VK_LEFT) {
+            if (modifiers == KeyEvent.CTRL_MASK) {
+                text.moveCaretWordBackward();
+            } else {
+                text.moveCaretBackward();
+            }
+        } else if (keyCode == KeyEvent.VK_RIGHT) {
+            if (modifiers == KeyEvent.CTRL_MASK) {
+                text.moveCaretWordForward();
+            } else {
+                text.moveCaretForward();
+            }
+        } else if (keyCode == KeyEvent.VK_UP) {
+            text.moveCaretUp();
+        } else if (keyCode == KeyEvent.VK_DOWN) {
+            text.moveCaretDown();
+        } else if (keyCode == KeyEvent.VK_BACK_SPACE) {
+            text.deleteBackward();
+        } else if (keyCode == KeyEvent.VK_DELETE) {
+            System.out.println("delete");
+            text.deleteForward();
+        } else if (keyCode == KeyEvent.VK_ENTER) {
+            text.insert("\n", text.getCaretPosition());
+        } else if (keyCode == KeyEvent.VK_TAB) {
+            text.insert("\t", text.getCaretPosition());
+        }  else if (keyCode == KeyEvent.VK_A && modifiers == KeyEvent.CTRL_MASK) {
+            text.selectAll();
+        } else if (keyCode == KeyEvent.VK_X && modifiers == KeyEvent.CTRL_MASK) {
+            text.cut();
+        } else if (keyCode == KeyEvent.VK_C && modifiers == KeyEvent.CTRL_MASK) {
+            text.copy();
+        } else if (keyCode == KeyEvent.VK_V && modifiers == KeyEvent.CTRL_MASK) {
+            text.paste();
+        }
+
+        // handle text input
+        if (keyCode != KeyEvent.VK_LEFT && keyCode != KeyEvent.VK_RIGHT && keyCode != KeyEvent.VK_UP && keyCode != KeyEvent.VK_DOWN && !e.isActionKey()) {
+            char c = e.getKeyChar();
+            if (c != KeyEvent.CHAR_UNDEFINED) {
+                text.insert(String.valueOf(c), text.getCaretPosition());
+            }
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+
     }
 
     class Viewer extends Canvas {
@@ -392,7 +455,7 @@ public class TextEditor extends JFrame implements ActionListener {
         private StringBuilder sb;
 
         public Text() {
-            sb = new StringBuilder();
+            sb = new StringBuilder("this is a test");
         }
 
         public void setText(String text) {
@@ -534,6 +597,127 @@ public class TextEditor extends JFrame implements ActionListener {
             viewer.setForeground(color);
             viewer.repaint();
         }
+
+        public void insert(String input, int caretPosition) {
+            sb.insert(caretPosition, input);
+            viewer.repaint();
+        }
+
+        public void moveCaretWordBackward() {
+            int line = viewer.caretLine;
+            int column = viewer.caretColumn;
+            String lineText = getLineText(line);
+            if (column > 0) {
+                if (Character.isWhitespace(lineText.charAt(column - 1))) {
+                    for (int i = column - 1; i >= 0; i--) {
+                        if (!Character.isWhitespace(lineText.charAt(i))) {
+                            column = i + 1;
+                            break;
+                        }
+                    }
+                } else {
+                    for (int i = column - 1; i >= 0; i--) {
+                        if (Character.isWhitespace(lineText.charAt(i))) {
+                            column = i + 1;
+                            break;
+                        }
+                    }
+                }
+                viewer.caretColumn = column;
+                viewer.repaint();
+            }
+
+            
+        }
+
+        public void moveCaretBackward() {
+            int line = viewer.caretLine;
+            int column = viewer.caretColumn;
+            if (column > 0) {
+                column--;
+                viewer.caretColumn = column;
+                viewer.repaint();
+            }
+        }
+
+        public void moveCaretWordForward() {
+            int line = viewer.caretLine;
+            int column = viewer.caretColumn;
+            String lineText = getLineText(line);
+            if (column < lineText.length()) {
+                if (Character.isWhitespace(lineText.charAt(column))) {
+                    for (int i = column; i < lineText.length(); i++) {
+                        if (!Character.isWhitespace(lineText.charAt(i))) {
+                            column = i;
+                            break;
+                        }
+                    }
+                } else {
+                    for (int i = column; i < lineText.length(); i++) {
+                        if (Character.isWhitespace(lineText.charAt(i))) {
+                            column = i;
+                            break;
+                        }
+                    }
+                }
+                viewer.caretColumn = column;
+                viewer.repaint();
+            }
+        }
+
+        public void moveCaretForward() {
+            int line = viewer.caretLine;
+            int column = viewer.caretColumn;
+            String lineText = getLineText(line);
+            if (column < lineText.length()) {
+                column++;
+                viewer.caretColumn = column;
+                viewer.repaint();
+            }
+        }
+
+        public void moveCaretUp() {
+
+
+        }
+
+        public void moveCaretDown() {
+        }
+
+        public void deleteBackward() {
+            if (viewer.selectionStart >= 0 && viewer.selectionEnd >= 0) {
+                sb.delete(viewer.selectionStart, viewer.selectionEnd);
+                viewer.caretLine = viewer.selectionStart / (viewer.getFontMetrics(viewer.getFont()).stringWidth("\n") + 1);
+                viewer.caretColumn = viewer.selectionStart - getLineStart(viewer.caretLine);
+                viewer.selectionStart = -1;
+                viewer.selectionEnd = -1;
+                viewer.repaint();
+            } else {
+                if (viewer.caretColumn > 0) {
+                    sb.deleteCharAt(getCaretPosition() - 1);
+                    setCaretPosition(getCaretPosition() - 1);
+                    viewer.repaint();
+                }
+            }
+        }
+
+        public void deleteForward() {
+            if (viewer.selectionStart >= 0 && viewer.selectionEnd >= 0) {
+                sb.delete(viewer.selectionStart, viewer.selectionEnd);
+                viewer.caretLine = viewer.selectionStart / (viewer.getFontMetrics(viewer.getFont()).stringWidth("\n") + 1);
+                viewer.caretColumn = viewer.selectionStart - getLineStart(viewer.caretLine);
+                viewer.selectionStart = -1;
+                viewer.selectionEnd = -1;
+                viewer.repaint();
+            } else {
+                if (viewer.caretColumn < getLineText(viewer.caretLine).length()) {
+                    sb.deleteCharAt(getCaretPosition());
+                    viewer.repaint();
+                }
+            }
+        }
+
+
     }
 }
 
